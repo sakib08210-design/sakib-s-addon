@@ -10,7 +10,7 @@ const manifestData = {
   id: "custom.music.addon",
   name: "Monochrome Music",
   version: "1.0.0",
-  description: "Music streaming addon using Monochrome API",
+  description: "Lossless music streaming addon for Bitchord",
   author: "Sakib",
   type: "audio-provider"
 };
@@ -23,7 +23,7 @@ app.get('/manifest.json', (req, res) => {
   res.json(manifestData);
 });
 
-// 1. Search Endpoint
+// Search Endpoint (Direct Lossless Stream URL mapping for Bitchord)
 app.get('/search', async (req, res) => {
   const query = req.query.q || req.query.query;
   const searchQuery = query ? query : "Arijit";
@@ -38,16 +38,21 @@ app.get('/search', async (req, res) => {
     });
     const data = await response.json();
     
-    // Bitchord ke format ke mutabiq tracks map karna
+    // Bitchord ke liye tracks ko direct lossless stream url ke sath map karna
     if (data.tracks) {
-      const formattedTracks = data.tracks.map(track => ({
-        id: track.id,
-        title: track.title,
-        artist: track.artistNames || "Unknown Artist",
-        duration: Math.round((track.duration || 0) / 1000),
-        thumbnail: track.artwork,
-        url: `/stream?id=${track.id}&lsrc=${encodeURIComponent(track.lsrc || '')}`
-      }));
+      const formattedTracks = data.tracks.map(track => {
+        // Direct lossless audio URL banana
+        const streamUrl = track.lsrc ? `${API_BASE}${track.lsrc.startsWith('/') ? '' : '/'}${track.lsrc}` : '';
+        
+        return {
+          id: track.id,
+          title: track.title,
+          artist: track.artistNames || "Unknown Artist",
+          duration: Math.round((track.duration || 0) / 1000),
+          thumbnail: track.artwork,
+          url: streamUrl // Yahan direct lossless link ja raha hai
+        };
+      });
       res.json({ results: formattedTracks });
     } else {
       res.json(data);
@@ -55,26 +60,6 @@ app.get('/search', async (req, res) => {
   } catch (err) {
     console.error("Search error:", err);
     res.status(500).json({ error: "Failed to fetch search results" });
-  }
-});
-
-// 2. Stream Endpoint (Gaana play karne ke liye)
-app.get('/stream', async (req, res) => {
-  const { id, lsrc } = req.query;
-
-  try {
-    // Agar direct lsrc stream source available hai
-    if (lsrc) {
-      res.json({
-        success: true,
-        streamUrl: `${API_BASE}${lsrc.startsWith('/') ? '' : '/'}${lsrc}`
-      });
-    } else {
-      res.status(404).json({ error: "Stream URL not found" });
-    }
-  } catch (err) {
-    console.error("Stream error:", err);
-    res.status(500).json({ error: "Failed to fetch stream" });
   }
 });
 
