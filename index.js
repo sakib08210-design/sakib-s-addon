@@ -14,12 +14,15 @@ const HEADERS = {
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
 };
 
-// Root endpoint taaki Bitchord app ko 404 na mile
+// Bitchord ke liye proper Manifest response
 app.get('/', (req, res) => {
   res.json({
-    name: "Octave Music Addon",
-    status: "Online",
-    version: "1.0.0"
+    id: "octave.music.addon",
+    name: "Octave Music",
+    version: "1.0.0",
+    description: "Octave streaming addon for Bitchord",
+    author: "Sakib",
+    type: "audio-provider"
   });
 });
 
