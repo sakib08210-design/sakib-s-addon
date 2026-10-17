@@ -23,7 +23,7 @@ app.get('/manifest.json', (req, res) => {
   res.json(manifestData);
 });
 
-// 1. Search Endpoint
+// Search Endpoint (Direct Lossless Stream URL mapping)
 app.get('/search', async (req, res) => {
   const query = req.query.q || req.query.query;
   const searchQuery = query ? query : "Arijit";
@@ -39,15 +39,19 @@ app.get('/search', async (req, res) => {
     const data = await response.json();
     
     if (data.tracks) {
-      const formattedTracks = data.tracks.map(track => ({
-        id: track.id,
-        title: track.title,
-        artist: track.artistNames || "Unknown Artist",
-        duration: Math.round((track.duration || 0) / 1000),
-        thumbnail: track.artwork,
-        // Bitchord ko stream route par point karna taaki wo exact audio link maang sake
-        url: `https://${req.get('host')}/stream?lsrc=${encodeURIComponent(track.lsrc || '')}`
-      }));
+      const formattedTracks = data.tracks.map(track => {
+        // Direct absolute lossless audio URL banana
+        const directStreamUrl = track.lsrc ? `${API_BASE}${track.lsrc.startsWith('/') ? '' : '/'}${track.lsrc}` : '';
+        
+        return {
+          id: track.id,
+          title: track.title,
+          artist: track.artistNames || "Unknown Artist",
+          duration: Math.round((track.duration || 0) / 1000),
+          thumbnail: track.artwork,
+          url: directStreamUrl
+        };
+      });
       res.json({ results: formattedTracks });
     } else {
       res.json(data);
@@ -55,24 +59,6 @@ app.get('/search', async (req, res) => {
   } catch (err) {
     console.error("Search error:", err);
     res.status(500).json({ error: "Failed to fetch search results" });
-  }
-});
-
-// 2. Stream Endpoint (Bitchord ke liye direct lossless link return karna)
-app.get('/stream', async (req, res) => {
-  const { lsrc } = req.query;
-
-  try {
-    if (lsrc) {
-      const streamUrl = `${API_BASE}${lsrc.startsWith('/') ? '' : '/'}${lsrc}`;
-      // Bitchord ko direct redirect ya stream URL dena
-      res.redirect(302, streamUrl);
-    } else {
-      res.status(404).json({ error: "Stream URL not found" });
-    }
-  } catch (err) {
-    console.error("Stream error:", err);
-    res.status(500).json({ error: "Failed to fetch stream" });
   }
 });
 
