@@ -14,16 +14,23 @@ const HEADERS = {
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
 };
 
-// Bitchord ke liye proper Manifest response
+// Manifest data function jo dono jagah kaam karega
+const manifestData = {
+  id: "octave.music.addon",
+  name: "Octave Music",
+  version: "1.0.0",
+  description: "Octave streaming addon for Bitchord",
+  author: "Sakib",
+  type: "audio-provider"
+};
+
+// Root aur /manifest.json dono par manifest data dena
 app.get('/', (req, res) => {
-  res.json({
-    id: "octave.music.addon",
-    name: "Octave Music",
-    version: "1.0.0",
-    description: "Octave streaming addon for Bitchord",
-    author: "Sakib",
-    type: "audio-provider"
-  });
+  res.json(manifestData);
+});
+
+app.get('/manifest.json', (req, res) => {
+  res.json(manifestData);
 });
 
 // 1. Search Endpoint
