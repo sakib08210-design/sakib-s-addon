@@ -4,13 +4,14 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const API_BASE = "https://dzr.tabs-vs-spaces.wtf";
+// Naya Monochrome tracks base URL
+const API_BASE = "https://tracks.monochrome.st";
 
 const manifestData = {
   id: "custom.music.addon",
-  name: "Custom Music Addon",
+  name: "Monochrome Music",
   version: "1.0.0",
-  description: "Music streaming addon using custom API",
+  description: "Music streaming addon using Monochrome API",
   author: "Sakib",
   type: "audio-provider"
 };
@@ -23,7 +24,7 @@ app.get('/manifest.json', (req, res) => {
   res.json(manifestData);
 });
 
-// 1. Search Endpoint (Bina API key ke test karne ke liye)
+// Search Endpoint
 app.get('/search', async (req, res) => {
   const query = req.query.q;
   if (!query) return res.status(400).json({ error: "Query parameter 'q' is required" });
