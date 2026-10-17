@@ -14,7 +14,6 @@ const HEADERS = {
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
 };
 
-// Manifest data function jo dono jagah kaam karega
 const manifestData = {
   id: "octave.music.addon",
   name: "Octave Music",
@@ -24,7 +23,6 @@ const manifestData = {
   type: "audio-provider"
 };
 
-// Root aur /manifest.json dono par manifest data dena
 app.get('/', (req, res) => {
   res.json(manifestData);
 });
@@ -33,13 +31,16 @@ app.get('/manifest.json', (req, res) => {
   res.json(manifestData);
 });
 
-// 1. Search Endpoint
+// 1. Search Endpoint (Updated with complete parameters to avoid HTML error)
 app.get('/search', async (req, res) => {
   const query = req.query.q;
   if (!query) return res.status(400).json({ error: "Query parameter 'q' is required" });
 
   try {
-    const response = await fetch(`${API_BASE}/npLook?title=${encodeURIComponent(query)}`, {
+    // Original cURL wale parameters yahan add kiye gaye hain
+    const targetUrl = `${API_BASE}/npLook?sf=us&dz=997388151&title=${encodeURIComponent(query)}`;
+    
+    const response = await fetch(targetUrl, {
       headers: HEADERS
     });
     const data = await response.json();
