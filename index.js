@@ -14,13 +14,21 @@ const HEADERS = {
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
 };
 
-// 1. Search Endpoint (Octave ka actual search/lookup endpoint /npLook hai)
+// Root endpoint taaki Bitchord app ko 404 na mile
+app.get('/', (req, res) => {
+  res.json({
+    name: "Octave Music Addon",
+    status: "Online",
+    version: "1.0.0"
+  });
+});
+
+// 1. Search Endpoint
 app.get('/search', async (req, res) => {
   const query = req.query.q;
   if (!query) return res.status(400).json({ error: "Query parameter 'q' is required" });
 
   try {
-    // yahan /search ki jagah /npLook aur parameter me title use kiya gaya hai
     const response = await fetch(`${API_BASE}/npLook?title=${encodeURIComponent(query)}`, {
       headers: HEADERS
     });
@@ -32,7 +40,7 @@ app.get('/search', async (req, res) => {
   }
 });
 
-// 2. Stream Endpoint (Lossless link fetch karne ke liye)
+// 2. Stream Endpoint
 app.get('/stream', async (req, res) => {
   const { track, t, a, d, x, k } = req.query;
   
