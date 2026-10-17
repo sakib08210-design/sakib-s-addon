@@ -14,13 +14,13 @@ const HEADERS = {
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
 };
 
-// 1. Search Endpoint (Gaane search karne ke liye)
+// 1. Search Endpoint: Gaane search karne ke liye
 app.get('/search', async (req, res) => {
   const query = req.query.q;
   if (!query) return res.status(400).json({ error: "Query parameter 'q' is required" });
 
   try {
-    // Octave ki search API ko call karein (apne Network tab se search endpoint yahan adjust kar sakte hain)
+    // Agar Network tab me endpoint /npLook ya /search ho, toh yahan adjust kar sakte hain
     const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`, {
       headers: HEADERS
     });
@@ -32,7 +32,7 @@ app.get('/search', async (req, res) => {
   }
 });
 
-// 2. Audio Stream Endpoint (Lossless link fetch karne ke liye)
+// 2. Stream Endpoint: Gaane ki saari details aur play link dene ke liye
 app.get('/stream', async (req, res) => {
   const { track, t, a, d, x, k } = req.query;
   
@@ -41,24 +41,20 @@ app.get('/stream', async (req, res) => {
   }
 
   try {
-    // Jo cURL aapne bheja hai, wahi exact parameters yahan construct honge
+    // Lossless audio API ko call karke direct stream link generate karna
     const targetUrl = `${API_BASE}/audio/lossless?track=${track}&t=${encodeURIComponent(t || '')}&a=${encodeURIComponent(a || '')}&d=${d || 0}&x=${x || 0}&k=${k}`;
     
-    // Server ko HEAD ya GET request bhej kar check karenge
-    const response = await fetch(targetUrl, {
-      method: 'GET',
-      headers: HEADERS
-    });
-
-    // Agar audio URL ya stream redirect mil raha hai
+    // Music player ke liye saari details return karna
     res.json({
       success: true,
-      streamUrl: targetUrl, // Addon is URL ko direct play kar sakega
-      status: response.status
+      title: t || "Unknown Title",
+      artist: a || "Unknown Artist",
+      duration: d || 0,
+      streamUrl: targetUrl // Yeh link seedha play ho jayega
     });
   } catch (err) {
     console.error("Stream error:", err);
-    res.status(500).json({ error: "Failed to fetch stream" });
+    res.status(500).json({ error: "Failed to fetch stream details" });
   }
 });
 
