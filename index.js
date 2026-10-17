@@ -14,14 +14,14 @@ const HEADERS = {
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
 };
 
-// 1. Search Endpoint: Gaane search karne ke liye
+// 1. Search Endpoint (Octave ka actual search/lookup endpoint /npLook hai)
 app.get('/search', async (req, res) => {
   const query = req.query.q;
   if (!query) return res.status(400).json({ error: "Query parameter 'q' is required" });
 
   try {
-    // Agar Network tab me endpoint /npLook ya /search ho, toh yahan adjust kar sakte hain
-    const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`, {
+    // yahan /search ki jagah /npLook aur parameter me title use kiya gaya hai
+    const response = await fetch(`${API_BASE}/npLook?title=${encodeURIComponent(query)}`, {
       headers: HEADERS
     });
     const data = await response.json();
@@ -32,7 +32,7 @@ app.get('/search', async (req, res) => {
   }
 });
 
-// 2. Stream Endpoint: Gaane ki saari details aur play link dene ke liye
+// 2. Stream Endpoint (Lossless link fetch karne ke liye)
 app.get('/stream', async (req, res) => {
   const { track, t, a, d, x, k } = req.query;
   
@@ -41,16 +41,14 @@ app.get('/stream', async (req, res) => {
   }
 
   try {
-    // Lossless audio API ko call karke direct stream link generate karna
     const targetUrl = `${API_BASE}/audio/lossless?track=${track}&t=${encodeURIComponent(t || '')}&a=${encodeURIComponent(a || '')}&d=${d || 0}&x=${x || 0}&k=${k}`;
     
-    // Music player ke liye saari details return karna
     res.json({
       success: true,
       title: t || "Unknown Title",
       artist: a || "Unknown Artist",
       duration: d || 0,
-      streamUrl: targetUrl // Yeh link seedha play ho jayega
+      streamUrl: targetUrl
     });
   } catch (err) {
     console.error("Stream error:", err);
