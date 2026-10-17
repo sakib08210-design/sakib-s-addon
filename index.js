@@ -4,21 +4,14 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const API_BASE = "https://api.octavestreaming.com";
-
-const HEADERS = {
-  "accept": "*/*",
-  "accept-language": "en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7",
-  "origin": "https://music.octavestreaming.com",
-  "referer": "https://music.octavestreaming.com/",
-  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
-};
+// Ek stable public music API use kar rahe hain jo block nahi hoti
+const API_BASE = "https://saavn.dev/api";
 
 const manifestData = {
   id: "octave.music.addon",
   name: "Octave Music",
   version: "1.0.0",
-  description: "Octave streaming addon for Bitchord",
+  description: "Music streaming addon for Bitchord",
   author: "Sakib",
   type: "audio-provider"
 };
@@ -31,19 +24,30 @@ app.get('/manifest.json', (req, res) => {
   res.json(manifestData);
 });
 
-// 1. Search Endpoint (Corrected path: /api/apple/npLook)
+// 1. Search Endpoint
 app.get('/search', async (req, res) => {
   const query = req.query.q;
   if (!query) return res.status(400).json({ error: "Query parameter 'q' is required" });
 
   try {
-    const targetUrl = `${API_BASE}/api/apple/npLook?sf=us&dz=1006954381&title=${encodeURIComponent(query)}`;
-    
-    const response = await fetch(targetUrl, {
-      headers: HEADERS
-    });
+    const targetUrl = `${API_BASE}/search/songs?query=${encodeURIComponent(query)}`;
+    const response = await fetch(targetUrl);
     const data = await response.json();
-    res.json(data);
+
+    // Bitchord ke format ke mutabiq songs map karna
+    if (data.success && data.data && data.data.results) {
+      const formattedTracks = data.data.results.map(song => ({
+        id: song.id,
+        title: song.name,
+        artist: song.artists.primary.map(a => a.name).join(", "),
+        duration: song.duration,
+        thumbnail: song.image[2]?.url || song.image[0]?.url,
+        streamUrl: song.downloadUrl[4]?.url || song.downloadUrl[3]?.url || song.downloadUrl[0]?.url
+      }));
+      res.json({ results: formattedTracks });
+    } else {
+      res.json({ results: [] });
+    }
   } catch (err) {
     console.error("Search error:", err);
     res.status(500).json({ error: "Failed to fetch search results" });
@@ -52,28 +56,16 @@ app.get('/search', async (req, res) => {
 
 // 2. Stream Endpoint
 app.get('/stream', async (req, res) => {
-  const { track, t, a, d, x, k } = req.query;
+  const { url, title, artist } = req.query;
   
-  if (!track || !k) {
-    return res.status(400).json({ error: "Missing required track parameters" });
-  }
-
-  try {
-    const targetUrl = `${API_BASE}/audio/lossless?track=${track}&t=${encodeURIComponent(t || '')}&a=${encodeURIComponent(a || '')}&d=${d || 0}&x=${x || 0}&k=${k}`;
-    
-    res.json({
-      success: true,
-      title: t || "Unknown Title",
-      artist: a || "Unknown Artist",
-      duration: d || 0,
-      streamUrl: targetUrl
-    });
-  } catch (err) {
-    console.error("Stream error:", err);
-    res.status(500).json({ error: "Failed to fetch stream details" });
-  }
+  res.json({
+    success: true,
+    title: title || "Unknown Title",
+    artist: artist || "Unknown Artist",
+    streamUrl: url
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`Octave Addon is running on port ${PORT}`);
+  console.log(`Addon is running on port ${PORT}`);
 });
