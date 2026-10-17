@@ -4,7 +4,6 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Naya Monochrome tracks base URL
 const API_BASE = "https://tracks.monochrome.st";
 
 const manifestData = {
@@ -24,13 +23,15 @@ app.get('/manifest.json', (req, res) => {
   res.json(manifestData);
 });
 
-// Search Endpoint
+// Search Endpoint (Fixed parameter handling)
 app.get('/search', async (req, res) => {
-  const query = req.query.q;
-  if (!query) return res.status(400).json({ error: "Query parameter 'q' is required" });
+  const query = req.query.q || req.query.query;
+  
+  // Agar query na mile toh error dene ke bajay default "Arijit" search kar dega
+  const searchQuery = query ? query : "Arijit";
 
   try {
-    const targetUrl = `${API_BASE}/search?query=${encodeURIComponent(query)}`;
+    const targetUrl = `${API_BASE}/search?query=${encodeURIComponent(searchQuery)}`;
     const response = await fetch(targetUrl, {
       headers: {
         "Content-Type": "application/json",
