@@ -23,15 +23,14 @@ app.get('/manifest.json', (req, res) => {
   res.json(manifestData);
 });
 
-// Search Endpoint (Fixed parameter handling)
+// Search Endpoint (Fixed parameter to 'q')
 app.get('/search', async (req, res) => {
   const query = req.query.q || req.query.query;
-  
-  // Agar query na mile toh error dene ke bajay default "Arijit" search kar dega
   const searchQuery = query ? query : "Arijit";
 
   try {
-    const targetUrl = `${API_BASE}/search?query=${encodeURIComponent(searchQuery)}`;
+    // Yahan 'query=' ki jagah 'q=' kar diya hai
+    const targetUrl = `${API_BASE}/search?q=${encodeURIComponent(searchQuery)}`;
     const response = await fetch(targetUrl, {
       headers: {
         "Content-Type": "application/json",
