@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const API_BASE = "https://music-api.geeked.wtf";
+const API_BASE = "https://dzr.tabs-vs-spaces.wtf";
 
 const manifestData = {
   id: "custom.music.addon",
